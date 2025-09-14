@@ -1,5 +1,5 @@
 export type HttpError = {
-    // TODO: 具体的なエラー 
+    // TODO: 具体的なエラー
     type: 'Network';
     message: string;
 } | {
@@ -9,7 +9,7 @@ export type HttpError = {
     // 404 Not Found(存在しないページ) ページが存在しない旨を表示,トップ画面に戻る or 戻るボタンを表示
     // 500 Internal Server Error(サーバー側で処理ができない、サーバーが落ちている時) アクセスできない旨を表示
     // 502 Bad Gateway(無効なレスポンス) 入力値が無効な値である旨を表示
-    // 503 Service Unavaileble メンテナンス中かサーバーに負荷がかかりすぎている,時間をおいてから再度読み込んでくださいのメッセージ表示
+    // 503 Service Unavailable メンテナンス中かサーバーに負荷がかかりすぎている,時間をおいてから再度読み込んでくださいのメッセージ表示
     // 504 Gateway Timeout サーバーとの通信がタイムアウト,再読み込みボタンを表示するかトップページにリダイレクト
     type: 'Http';
     status: number;
@@ -17,9 +17,8 @@ export type HttpError = {
 } | {
     // TODO: JSONの値が不適切な時
     type: 'Parse';
-        message: string;
-}
+    message: string;
+};
 
-// HINT:
-// - UIは type を見て再試行/再ログイン/問い合わせ誘導を決める方針。
-// - messageは開発者向け。ユーザー向け文言は別テーブルで対応（i18n前提）。
+// NOTE: サーバ独自の { code: string, message: string } を受けた場合、messageは開発者向けに保持。
+//       ユーザ向け文言はUI側のi18nテーブルで type/status に応じて決める。

@@ -14,11 +14,14 @@ export function createHttpClient(baseUrl: string): HttpClient {
     // baseUrlには/が入るように、urlの頭には/が入らないようにurlの頭に/がないかをif文で判定してからjoinする
 
     // TODO: 2) 共通ヘッダ（Content-Type, Authorization）をどう与えるか方針を書く
-    // Content-Type:Jsonの時空のJsonは空オブジェクトとして扱う
-    // 渡されたJsonが壊れていたらParseとしてエラーを返す
+    // 204 No Content / Content-Length:0の場合はJSONを読み込まない
+    // 渡されたJsonが壊れていたらParseしてエラーを返す
+    // NOTE: Authorization付与方針: 呼び出し側が毎回 init.headers.Authorization を渡す
 
     // TODO: 3) fetchのtry-catchでNetworkエラーに丸める
     // try-catchでNetworkエラーをエラーとして丸めて画面に返す
+    // タイムアウト: 今回は未対応（別タスク）。将来はAbortControllerで実装。
+    // JSONの {message} or {error:{message}} > res.statusText > "Request failed"
 
     // TODO: 4) res.ok判定→falseならHttpエラー化（statusと開発者向けmessage）
     // responseの判定でfalseを返す時、statusに応じて出力するエラーメッセージを切り替える
@@ -29,7 +32,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
     // responseに問題がなければジェネリクスを返す
 
     // TODO: 7) post<T,B>はbodyをJSON.stringifyして送る（型B）。getはbodyなし。
-    // postのbodyはJSON.stringfyに変換する
+    // postのbodyはJSON.stringifyに変換する
 
     // ここでは{} as HttpClientのダミーだけ返す。
     return {} as unknown as HttpClient;
