@@ -15,3 +15,4 @@ export type User = {
 // TODO: UserResponse(サーバの生JSON) -> User(フロント用) の変換はサービス層で実施（snake_case→camelCase）
 // TODO: updatedAt を採用する場合は string(ISO)。サーバの updated_at をサービス層で mapped
 // TODO: idは安定識別子（主キー）。UIのキー/キャッシュ/比較はid基準で行う
+// TODO: UserResponse(例: {id,email,name,created_at,updated_at?}) -> User({createdAt,(updatedAt)}) の写像をここに例示
