@@ -11,17 +11,23 @@ export interface HttpClient {
 export function createHttpClient(baseUrl: string): HttpClient {
     // TODO: 1) baseUrlとurlの連結ルール（スラッシュ重複回避）を決める
     // baseUrlとurlをjoinする時にbaseUrlの末尾の/とurlの頭の/を連結しないように
-    // baseUrlには/が入るように、urlの頭には/が入らないようにurlの頭に/がないかをif文で判定してからjoinする
+    // joinルール: baseUrlは末尾の/を削除、urlは先頭に/を付与（なければ）、`${baseUrl}${url}` で連結
+    // 例) baseUrl: "https://api.example.com", url:"users" -> "https://api.example.com/users"
 
     // TODO: 2) 共通ヘッダ（Content-Type, Authorization）をどう与えるか方針を書く
-    // 204 No Content / Content-Length:0の場合はJSONを読み込まない
+    // - Accept: application/json を基本付与
+    // - POST時は Content-Type: application/json（JSON.stringify(body)）
+    // - Authorizationは今回: 呼び出し側が init.headers で渡す
+    // 204/Content-Length:0 は JSONを読まない。valueは undefined とする（UI側で「成功だけどデータなし」扱い）
     // 渡されたJsonが壊れていたらParseしてエラーを返す
-    // NOTE: Authorization付与方針: 呼び出し側が毎回 init.headers.Authorization を渡す
 
     // TODO: 3) fetchのtry-catchでNetworkエラーに丸める
     // try-catchでNetworkエラーをエラーとして丸めて画面に返す
-    // タイムアウト: 今回は未対応（別タスク）。将来はAbortControllerで実装。
-    // JSONの {message} or {error:{message}} > res.statusText > "Request failed"
+    // タイムアウト: 今回は未実装（別タスク）。将来はAbortControllerで X 秒で中断
+    // if (!response.ok) の中で:
+    // 1) JSON本文の {message} or {error:{message}} を最優先
+    // 2) なければ response.statusText
+    // 3) それも無ければ "Request failed"
 
     // TODO: 4) res.ok判定→falseならHttpエラー化（statusと開発者向けmessage）
     // responseの判定でfalseを返す時、statusに応じて出力するエラーメッセージを切り替える

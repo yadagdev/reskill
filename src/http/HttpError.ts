@@ -1,7 +1,7 @@
 export type HttpError = {
     // TODO: 具体的なエラー
     // DNS失敗 / オフライン / TCPタイムアウト / TLS失敗
-    // UIアクション -> エラーメッセージの画面を表示
+    // UIアクション -> 再試行ボタン表示 / オフライン検出時は案内 / リトライ回数の上限をUIで管理
     type: 'Network';
     message: string;
 } | {
@@ -18,7 +18,8 @@ export type HttpError = {
     message: string;
 } | {
     // TODO: JSONの値が不適切な時
-    // UIアクション -> JSONのメッセージが取得できればJSONのメッセージを使用。なければstatusTextのHTTPステータスを参照。なければ固定のメッセージを作成し使用し画面表示
+    // UIアクション -> 「形式が不正です」＋再読み込み/お問い合わせ導線（開発用messageはログに送る）
+    //                  JSONのメッセージが取得できればJSONのメッセージを使用。なければstatusTextのHTTPステータスを参照。なければ固定のメッセージを作成し使用し画面表示
     type: 'Parse';
     message: string;
 };
