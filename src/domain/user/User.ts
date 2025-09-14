@@ -11,3 +11,5 @@ export type User = {
 // TODO: createdAtはUI表示時にDateへ変換する(toLocalStringなど)。保持はstringのままにする。
 // TODO: サーバーのkey名が異なる場合(ex: created_at) -> 受信後にマッピングするのはサービス層。
 // TODO: Userは読み取り専用。更新系は専用のDTOを用意し、User自体は不変扱い。
+// TODO: UserResponse(サーバの生JSON) -> User(フロント用) の変換はサービス層で実施（snake_case→camelCase）
+// TODO: updatedAt を採用する場合は string(ISO)。サーバの updated_at をサービス層で mapped
