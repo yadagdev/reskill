@@ -1,10 +1,11 @@
 export type HttpError = {
     // TODO: 具体的なエラー
     // DNS失敗 / オフライン / TCPタイムアウト / TLS失敗
+    // UIアクション -> エラーメッセージの画面を表示
     type: 'Network';
     message: string;
 } | {
-    // TODO: 具体的なエラー
+    // TODO: 具体的なエラー（UI表示）
     // 401 Unauthorized(未ログイン) ログインしていない旨を表示しログイン画面にリダイレクト
     // 403 Forbidden(閲覧許可がないURL) 閲覧権限がない旨を表示
     // 404 Not Found(存在しないページ) ページが存在しない旨を表示,トップ画面に戻る or 戻るボタンを表示
@@ -17,6 +18,7 @@ export type HttpError = {
     message: string;
 } | {
     // TODO: JSONの値が不適切な時
+    // UIアクション -> JSONのメッセージが取得できればJSONのメッセージを使用。なければstatusTextのHTTPステータスを参照。なければ固定のメッセージを作成し使用し画面表示
     type: 'Parse';
     message: string;
 };
