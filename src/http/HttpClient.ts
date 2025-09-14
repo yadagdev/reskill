@@ -1,3 +1,18 @@
+/*
+本モジュールの責務（do）
+    - HTTP呼び出しの入口を統一（fetch/axios等の実装差を隠蔽）
+    - 共通ヘッダ付与（Accept, 必要時 Content-Type）、認証ヘッダの方針統一（今回はB: 呼び出し側渡し）
+    - エラー整形（Network/Http/Parse への正規化とメッセージ抽出）
+    - 空レスポンス(204/Content-Length:0)の扱いを統一
+
+本モジュールの非責務（don't）
+    - スキーマ検証（Zod等）は上位層で実施予定
+    - 自動リトライ/バックオフ（将来必要なら別レイヤで）
+    - ビジネスロジック（ユースケース）は保持しない
+    - 認可判定やUI文言の最終決定（UI側/i18n側で実施）
+
+DI前提: createHttpClientで作ったインスタンスをサービス層に注入して使う（HttpClientは下位の詳細を隠蔽）
+*/
 import type { Result } from '../domain/common/Result';
 
 // 通信の入口を一本化するインターフェース
@@ -17,9 +32,10 @@ export function createHttpClient(baseUrl: string): HttpClient {
     // TODO: 2) 共通ヘッダ（Content-Type, Authorization）をどう与えるか方針を書く
     // - Accept: application/json を基本付与
     // - POST時は Content-Type: application/json（JSON.stringify(body)）
-    // - Authorizationは今回: 呼び出し側が init.headers で渡す
-    // 204/Content-Length:0 は JSONを読まない。valueは undefined とする（UI側で「成功だけどデータなし」扱い）
-    // 渡されたJsonが壊れていたらParseしてエラーを返す
+    // - Authorizationは今回: 呼び出し側が init.headers で渡す。毎回ヘッダ設定の重複/付け忘れリスク（今回はシンプルさを優先）
+    // - 204/Content-Length:0 は JSONを読まない。valueは undefined とする（UI側で「成功だけどデータなし」扱い）
+    // - レスポンスJSONのパース失敗や契約ズレ（キー欠落/型不一致）は Parse として返す
+    // - 400系は Http(status) として返す（入力不正はParseではない）
 
     // TODO: 3) fetchのtry-catchでNetworkエラーに丸める
     // try-catchでNetworkエラーをエラーとして丸めて画面に返す
