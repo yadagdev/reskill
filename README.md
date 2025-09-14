@@ -25,3 +25,9 @@
 - エラー抽出: {message} or {error.message} → statusText → "Request failed"
 - 空レス: 204/Content-Length:0 は JSON 不要。value は undefined 扱い
 - タイムアウト: 未実装（将来 AbortController で対応）
+
+## 層の責務表
+
+- UI: 文言/表示・ユーザー操作
+- Service: 最終バリデ/マッピング/ユースケース制御
+- Http: 通信/共通ヘッダ/エラー正規化
