@@ -19,6 +19,8 @@
         private readonly http: HttpClient
     ){}
 
+    // TODO: const BASE = '/api/users'; // `createUser`: POST BASE, `getById`: GET `${BASE}/${id}`
+
     // TODO: Response例:
     //  POST /api/users -> { id, email, name, created_at } を受け取り User へ { createdAt } に変換
     //  GET  /api/users/:id -> 同上。404は HttpError{ type:'Http', status:404 }
@@ -27,6 +29,7 @@
     //  - created_at -> createdAt (string ISO)
     //  - updated_at -> updatedAt (採用する場合)
     // TODO: サーバ { updated_at } -> User { updatedAt } へマッピング
+    // POST /api/users -> { id, email, name, created_at, updated_at? } -> User { createdAt, (updatedAt) }
     async createUser(dto: CreateUserDto): Promise<Result<User>> {
         // TODO: 事前バリデーション（email/name/password)
         // TODO: this.http.post<User, CreateUserDto>('/api/users', dto)
@@ -46,5 +49,10 @@
         // TODO: this.http.get<User>(`/api/users/${id}`)
         // TODO: 404/401/403/5xxの代表ケースをコメントで書いておく
     }
+
+    // TODO: private buildUser(resp: { id:string; email:string; name:string; created_at:string; updated_at?:string }): User
+    //        - 上記のような小さなprivate関数で snake_case -> camelCase を一箇所に集約
+
+    // TODO: private normalizeCreateUser(dto: CreateUserDto): CreateUserDto  // trim/小文字化など
 }
 */
