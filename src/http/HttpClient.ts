@@ -36,4 +36,4 @@ export function createHttpClient(baseUrl: string): HttpClient {
 
     // ここでは{} as HttpClientのダミーだけ返す。
     return {} as unknown as HttpClient;
-}
+};
