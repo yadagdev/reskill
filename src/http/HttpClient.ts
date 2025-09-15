@@ -13,7 +13,12 @@
 
 DI前提: createHttpClientで作ったインスタンスをサービス層に注入して使う（HttpClientは下位の詳細を隠蔽）
 */
+
+// NOTE: createHttpClient の戻りは { get, post } を持つ具象オブジェクト
+//       今日は "処理の段取り" をコメントで固める（完成コードは書かない）
 import type { Result } from '../domain/common/Result';
+// import { joinUrl } from './internal/joinUrl';
+// import { extractErrorMessage } from './internal/extractErrorMessage';
 
 // 通信の入口を一本化するインターフェース
 export interface HttpClient {
@@ -24,6 +29,8 @@ export interface HttpClient {
 
 // 具象実装ファクトリ（本体は未実装）
 export function createHttpClient(baseUrl: string): HttpClient {
+    // TODO: baseUrl を正規化（末尾の"/"を削る）
+
     // TODO: 1) baseUrlとurlの連結ルール（スラッシュ重複回避）を決める
     // baseUrlとurlをjoinする時にbaseUrlの末尾の/とurlの頭の/を連結しないように
     // joinルール: baseUrlは末尾の/を削除、urlは先頭に/を付与（なければ）、`${baseUrl}${url}` で連結
@@ -56,6 +63,32 @@ export function createHttpClient(baseUrl: string): HttpClient {
     // TODO: 7) post<T,B>はbodyをJSON.stringifyして送る（型B）。getはbodyなし。
     // postのbodyはJSON.stringifyに変換する
 
+/*return {
+        async get<T>(url: string, init?: RequestInit): Promise<Result<T>> {
+        TODO: try/catch → Network に丸める（catch で { ok:false, error:{type:'Network', message} }）
+        TODO: fetch(joinUrl(baseUrl, url), { method: 'GET', headers: { Accept:'application/json', ...init?.headers }, ...init })
+        TODO: 204 / Content-Length:0 → JSONを読まない。value は undefined as T の方針をコメントで明記
+        TODO: !response.ok → 可能なら本文をJSONとして読み、extractErrorMessageで message を得て Http(status,message)
+        TODO: json() 失敗 → Parse エラーに丸める
+        TODO: 成功 → { ok:true, value: data as T }
+        HINT: RequestInit の headers は呼び出し側優先でマージ（AuthorizationはB案：呼び出し側が渡す）
+        HINT: タイムアウトは未実装（将来 AbortController）
+        NOTE: Network判定: fetch が throw したら Network として畳み込む（catch 節で Result<never> を返す方針）
+        NOTE: Parse判定: JSONを読む前に content-type を確認。json() 失敗は Parse で返す
+        NOTE: 204/Content-Length:0 は JSON を読まない。value は undefined とする（UIは「成功だがデータなし」）
+        },
+
+        async post<T, B>(url: string, body: B, init?: RequestInit): Promise<Result<T>> {
+            TODO: 上記 get と同様の流れ。method:'POST'
+            TODO: body は JSON.stringify(body)。Content-Type:'application/json' を付与
+            TODO: !response.ok → extractErrorMessage で Http(status,message)
+            TODO: json() 失敗 → Parse
+            TODO: 成功 → { ok:true, value: data as T }
+        }
+    };
+
     // ここでは{} as HttpClientのダミーだけ返す。
-    return {} as unknown as HttpClient;
+    // ※ ビルドを通したい場合のみ、一時的にダミー return を自分で入れてOK:
+*/
+    return {} as unknown as HttpClient;//ビルドを通すための仮置き
 };
