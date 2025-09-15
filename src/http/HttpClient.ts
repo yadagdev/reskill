@@ -14,8 +14,6 @@
 DI前提: createHttpClientで作ったインスタンスをサービス層に注入して使う（HttpClientは下位の詳細を隠蔽）
 */
 
-// NOTE: createHttpClient の戻りは { get, post } を持つ具象オブジェクト
-//       今日は "処理の段取り" をコメントで固める（完成コードは書かない）
 import type { Result } from '../domain/common/Result';
 import { joinUrl } from './internal/joinUrl';
 import { extractErrorMessage } from './internal/extractErrorMessage';
@@ -31,7 +29,7 @@ export interface HttpClient {
 // joinルール: baseUrlは末尾の/を削除、urlは先頭に/を付与（なければ）、`${baseUrl}${url}` で連結
 // 例) baseUrl: "https://api.example.com", url:"users" -> "https://api.example.com/users"
 export function createHttpClient(baseUrl: string): HttpClient {
-    /* TODO: baseUrl を正規化（末尾の"/"を削る）
+/*  TODO: baseUrl を正規化（末尾の"/"を削る）
 
     TODO: 1) baseUrlとurlの連結ルール（スラッシュ重複回避）を決める
         baseUrlとurlをjoinする時にbaseUrlの末尾の/とurlの頭の/を連結しないように
@@ -62,78 +60,73 @@ export function createHttpClient(baseUrl: string): HttpClient {
     TODO: 7) post<T,B>はbodyをJSON.stringifyして送る（型B）。getはbodyなし。
         postのbodyはJSON.stringifyに変換する
 
-    NOTE: Network判定は get/post 内の try { await fetch(...) } catch(e) { ... } で行う
-    NOTE: Parse判定は get/post 内。content-type が application/json のときに json() を試み、失敗したら Parse
     return {
+
         TODO: fetch(joinUrl(baseUrl, url), { method: 'GET', headers: { Accept:'application/json', ...init?.headers }, ...init })
         async get<T>(url: string, init?: RequestInit): Promise<Result<T>> {
-        1)  const fullUrl = joinUrl(baseUrl, url);
-        2)  const headers = {
-                Accept:'application/json',
-                ...(init?.headers ?? {}
-            }
+            1)  const fullUrl = joinUrl(baseUrl, url);
+            2)  const headers = {
+                    Accept:'application/json',
+                    ...(init?.headers ?? {})
+                }
 
-        TODO: try/catch → Network に丸める（catch で { ok:false, error:{type:'Network', message} }）
-        3)  try {
-            const response = await fetch(fullUrl, {
-                    method:'GET',
-                    ...init, headers
-                })
-            } catch(e) {
-                return {
-                    ok:false,
-                    error:{
-                        type:'Network',
-                        message: String(e)
+            TODO: try/catch → Network に丸める（catch で { ok:false, error:{type:'Network', message} }）
+            3)  try {
+                const response = await fetch(
+                        fullUrl, {
+                            method:'GET',
+                            ...init, headers
+                        }
+                    )
+                } catch(e) {
+                    return {
+                        ok:false,
+                        error:{
+                            type:'Network',
+                            message: String(e)
+                        }
                     }
                 }
-            }
 
-        TODO: 204 / Content-Length:0 → JSONを読まない。value は undefined as T の方針をコメントで明記
-        TODO: 成功 → { ok:true, value: data as T }
-        4)  if(response.status === 204 || response.headers.get('content-length') === '0') {
+            TODO: 204 / Content-Length:0 → JSONを読まない。value は undefined as T の方針をコメントで明記
+            4)  if(response.status === 204 || response.headers.get('content-length') === '0') {
+                    // JSONは読まない
+                    return {
+                        ok: true,
+                        value: undefined as T
+                    }
+                }
+
+            const parsedBody = content-type が JSON のときだけ json(); 失敗は Parse（この if では失敗させない）
+            const message = extractErrorMessage(response, parsedBody)
+
+            TODO: !response.ok → 可能なら本文をJSONとして読み、extractErrorMessageで message を得て Http(status,message)
+            5) if(!response.ok) {
+                    可能ならJSONを読み、extractErrorMessage(response, body)でmessageを決定
+                    return {
+                        ok: false,
+                        error: {
+                            type: 'Http',
+                            status: response.status,
+                            message
+                        }
+                    }
+                }
+
+            6)  TODO: content-typeがapplication/jsonの時だけjson()。失敗したらParse エラーに丸める。
+
+            7)  成功:
                 return {
                     ok: true,
-                    value: undefined as T
-                }
-            }
-        TODO: !response.ok → 可能なら本文をJSONとして読み、extractErrorMessageで message を得て Http(status,message)
-        5) if(!response.ok) {
-                可能ならJSONを読み、extractErrorMessage(response, body)でmessageを決定
-                return {
-                    ok: false,
-                    error: {
-                        type: 'HTTP',
-                        status: response.stauts,
-                        message
-                    }
-                }
-            }
-
-        TODO: json() 失敗 → Parse エラーに丸める
-        6)  content-typeがapplication/jsonの時だけjson()。失敗したらParse。
-
-        7)  成功: return {
-                    ok: false,
                     value: data as T
                 }
 
-        NOTE: Network判定はtry-catch、Parse判定は content-type + json() 失敗時
+        NOTE: (get) Network=catch, Http=!ok, Parse=json失敗。Authorization=B案。Timeoutは将来 AbortController。
+        NOTE: (get) Network判定は try/catch。Parse判定は content-type が JSON のときの json() 失敗。
+                    Authorization は呼び出し側（B案）。Timeout は将来 AbortController。
+        HINT: (get) ヘッダは呼び出し側優先でマージ。204/CL:0 は JSON を読まない。
 
-
-
-
-
-        HINT: RequestInit の headers は呼び出し側優先でマージ（AuthorizationはB案：呼び出し側が渡す）
-        HINT: タイムアウトは未実装（将来 AbortController）
-        NOTE: Network判定: fetch が throw したら Network として畳み込む（catch 節で Result<never> を返す方針）
-        NOTE: Parse判定: JSONを読む前に content-type を確認。json() 失敗は Parse で返す
-        NOTE: 204/Content-Length:0 は JSON を読まない。value は undefined とする（UIは「成功だがデータなし」）
-        },
-
-        TODO: 上記 get と同様の流れ。method:'POST'
         async post<T, B>(url: string, body: B, init?: RequestInit): Promise<Result<T>> {
-
             1) const fullUrl = joinUrl(baseUrl, url)
 
             2) const headers = {
@@ -142,15 +135,17 @@ export function createHttpClient(baseUrl: string): HttpClient {
                 ...(init?.headers ?? {})
                 }
 
-            TODO: body は JSON.stringify(body)。Content-Type:'application/json' を付与
+            TODO: try/catch → Network に丸める（catch で { ok:false, error:{type:'Network', message} }）
             3)  try {
-                    const response = await fetch(full,
+                    const response = await fetch(
+                        fullUrl,
                         {
                             method: 'POST',
                             body: JSON.stringify(body),
-                            ...init, headers }
-                        )
-                    } catch (e) {
+                            ...init, headers
+                        }
+                    )
+                } catch (e) {
                         return {
                             ok: false,
                             error: {
@@ -159,24 +154,59 @@ export function createHttpClient(baseUrl: string): HttpClient {
                             }
                         }
                     }
-            TODO: !response.ok → extractErrorMessage で Http(status,message)
-            4) if (!response.ok) {
-                    get と同様: extractErrorMessage → Http
+            TODO: 204 / Content-Length:0 → JSONを読まない。value は undefined as T
+            4)  if(response.status === 204 || response.headers.get('content-length') === '0') {
+                // JSONは読まない
+                return {
+                    ok: true,
+                    value: undefined as T
                 }
+            }
 
-            TODO: json() 失敗 → Parse
+            const parsedBody = content-type が JSON のときだけ json(); 失敗は Parse（この if では失敗させない）
+            const message = extractErrorMessage(response, parsedBody)
+
+            TODO: !response.ok → extractErrorMessage で Http(status,message)
+            5) if (!response.ok) {
+                    可能ならJSONを読み、extractErrorMessage(response, body)でmessageを決定
+                    return {
+                        ok: false,
+                        error: {
+                            type: 'Http',
+                            status: response.status,
+                            message
+                        }
+                    }
+                }
+            TODO: content-typeがapplication/jsonの時だけjson()。失敗したらParse エラーに丸める。
+            6) // JSON判定→json()、失敗なら Parse、成功なら { ok:true, value as T }
+
             TODO: 成功 → { ok:true, value: data as T }
-            5) // JSON判定→json()、失敗なら Parse、成功なら { ok:true, value as T }
-            NOTE: Authorization は呼び出し側（B案）。タイムアウトは将来 AbortController。
-
-
-
-
+            POST時は Content-Type: application/json（JSON.stringify(body)）
+            7)  成功:
+                return {
+                    ok: true,
+                    value: data as T
+                }
         }
-    };
+    }
+    
+    NOTE: (post) 上と同じ方針。POSTは body を JSON.stringify + 'Content-Type: application/json'
+    NOTE: (post) Network=catch, Http=!ok, Parse=json失敗。Authorization=B案。Timeoutは将来AbortController。
+    HINT: (post) 204/CL:0 あり得る（作成APIでも No Content はあり得る）
+}
 
-        ここでは{} as HttpClientのダミーだけ返す。
-        ※ ビルドを通したい場合のみ、一時的にダミー return を自分で入れてOK:
+
+    ここでは{} as HttpClientのダミーだけ返す。
+    ※ ビルドを通したい場合のみ、一時的にダミー return を自分で入れてOK:
 */
     return {} as unknown as HttpClient;//ビルドを通すための仮置き
 };
+
+/*
+    NOTE:    createHttpClient の戻りは { get, post } を持つ具象オブジェクト。
+    NOTE:    Authorization は呼び出し側（B案）。タイムアウトは将来 AbortController。
+    HINT: RequestInit の headers は呼び出し側優先でマージ（AuthorizationはB案：呼び出し側が渡す）
+    HINT: タイムアウトは未実装（将来 AbortController）
+*/
+
