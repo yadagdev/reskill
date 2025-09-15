@@ -5,3 +5,4 @@ export function joinUrl(baseUrl: string, url: string): string {
     //TODO: クエリや # は url 側に含める前提。ここでは「結合」だけを担当（テスト用語の“結合テスト”の意ではない）
     return {} as unknown as string; //ビルドを通すための仮置き
 }
+// TEST: 末尾/先頭スラッシュの全組合せを網羅する（表で考える）
