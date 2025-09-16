@@ -27,7 +27,7 @@
 - HttpClient
   - 低レベルHTTPを集約する層。ヘッダ付与、例外→`Result`正規化、204/Parseの扱いなど。
 
-- Result<T>
+- Result`<T>`
   - 成功/失敗を型で表すユニオン。`{ ok:true, value:T } | { ok:false, error:HttpError }`
 
 - HttpError
