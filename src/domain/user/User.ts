@@ -3,7 +3,7 @@ export type User = {
     email: string;
     name: string;
     createdAt: string;
-    // updatedAt: string;
+    updatedAt?: string;
 }
 // createdAtはISO文字列／UI表示でDateに変換／書き換えない
 // TODO: updatedAt(ISO文字列) を採用する場合: Userに追加。サーバーのupdated_atをサービス層でマッピング
