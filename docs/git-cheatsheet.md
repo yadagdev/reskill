@@ -17,7 +17,7 @@ git commit -m "feat(http): scaffold get/post flow with comments"
 git push -u origin feature/http-client-min
 
 # 5) PR 作成（GitHub CLI）
-gh pr create --base main --head feature/http-client-min --fill
+gh pr create --base main --head <branch> --fill
 
 # 6) レビュー後 Squash merge & ブランチ削除
 gh pr merge --squash --delete-branch
@@ -29,8 +29,8 @@ gh pr merge --squash --delete-branch
 git pull --ff-only
 # fast-forward の場合のみマージ（線形履歴を壊さない）
 
-git fetch -p / --prune
-# リモートで消えた枝をローカルの「リモート追跡ブランチ」からも削除
+git fetch -p
+# --prune リモートで消えた枝をローカルの「リモート追跡ブランチ」からも削除
 
 git add -A
 # 変更/新規/削除を一括ステージング
