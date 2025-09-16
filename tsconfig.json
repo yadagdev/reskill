@@ -16,5 +16,5 @@
     "outDir": "./dist",
   },
   "include": ["src/**/*"],
-  "exclude": ["vitest.config.ts"],
+  "exclude": ["vitest.config.ts", "note_modules", "dist", "coverage"]
 }
