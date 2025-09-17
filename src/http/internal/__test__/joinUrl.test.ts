@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { joinUrl } from '../../../http/internal/joinUrl';
+import { joinUrl } from '../joinUrl';
 
 describe('joinUrl', () => {
 

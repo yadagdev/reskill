@@ -1,5 +1,5 @@
 import { describe, it, expect} from 'vitest';
-import { extractErrorMessage } from '../../../http/internal/extractErrorMessage';
+import { extractErrorMessage } from '../extractErrorMessage';
 
 function response(text: string) {
     return new Response(null, { status: 400, statusText: text });
