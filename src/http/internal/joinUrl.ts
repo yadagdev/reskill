@@ -1,12 +1,19 @@
+//  NOTE: 末尾/先頭スラッシュを正規化して結合するユーティリティ機能
+//  仕様:
+//    - baseUrlの末尾の"/"を除去
+//    - urlが空なら base をそのまま返す
+//    - "//"を作らないようにする
+//    - クエリや # はurl側に含める前提（ここでは結合責務のみ）
 export function joinUrl(baseUrl: string, url: string): string {
-/*  NOTE: URLSearchParams や # は url 側に含める前提（ここでは結合のみ）
-    TODO: baseUrl の末尾の "/" を 1 個だけに正規化（末尾の "/" を削る）
-    TODO: urlの先頭に"/"を付与（無ければ） ※ "//" にならないように
-    TODO: 例: baseUrl "https://api.example.com/" + "users" -> "https://api.example.com/users"
-    TODO: クエリや # は url 側に含める前提。ここでは「結合」だけを担当（テスト用語の“結合テスト”の意ではない）
-*/
-    return {} as unknown as string; //ビルドを通すための仮置き
+    // baseUrl の末尾の "/" を 1 個だけに正規化（末尾の "/" を削る）
+    const base = baseUrl.replace(/\/+$/, '');
+    // urlが空の時はbaseをそのまま返す
+    if (!url) return base;
+
+    // urlの先頭に / が入っていればurlをそのままpathに代入し、そうでなければ先頭に / を入れてpathを作る
+    const path = url.startsWith('/') ? url : `/${url}`;
+
+    // base + path で通信先のエンドポイントを作成
+    return `${base}${path}`;
 }
-// HINT: baseUrl の末尾 '/' を 1 つだけに統一 → url 側は先頭 '/' を 1 つだけ付与 → 連結
 // TEST: 末尾/先頭スラッシュの全組合せを網羅する（表で考える）
-// CASES: base:'https://a/'+'b' → 'https://a/b' / base:'https://a'+'/b' → 'https://a/b' / base:'https://a/'+'/b' → 'https://a/b'
