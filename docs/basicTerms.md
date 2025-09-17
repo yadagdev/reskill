@@ -66,3 +66,47 @@
 - ユーザー詳細取得
   - IDチェック -> API GET -> マッピング -> Resultで返却
   - 単なる「リクエストを出してレスポンスを受け取る」ではなく、**目的を達成するための一連の段取り**がユースケース
+
+## Narrowing（ナローイング）
+
+条件分岐などで変数の型をより狭い型に確定させること。
+例: `if (typeof x === 'object' && x !== null) { /* ここで x は object */ }`
+
+## Parse / Parsing（パース）
+
+文字列やバイト列を構造化データに解釈すること。
+例: `await response.json()` は JSON 文字列 → JS オブジェクトへのパース。
+
+## Mapping（マッピング）
+
+取得したデータを UI で使いやすい形に組み替えること。
+例: `created_at` → `createdAt`（snake_case → camelCase 変換）。
+
+## Optional Chaining（オプショナルチェイニング）
+
+`a?.b?.c` のように、途中が `null/undefined` でも例外を出さず安全に辿る構文。
+
+## Nullish Coalescing（null 合体演算子）
+
+`x ?? y` は x が `null/undefined` のときだけ y を使う。
+
+## unknown
+
+"安全な any"。使う前に型チェックが必須になる特殊なトップ型。
+
+## HttpClient / Service / UI の責務
+
+- HttpClient: 低レベルHTTPの共通入口（URL結合、共通ヘッダ、Network/Http/Parse 正規化）
+- Service: ユースケースの手順（最終バリデ→API呼び出し→マッピング→Result返却）
+- UI: 表示・文言・分岐（Result を受けて導線を決める）
+
+## Fallback（フォールバック）
+
+第一候補が使えない時に、次の安全策へ切り替えること。
+例: `error.message` が無ければ `statusText`、それも無ければ固定文言。
+
+## Result 型（成功/失敗の包み）
+
+- 成功: `{ ok: true, value: T }`
+- 失敗: `{ ok: false, error: { type: 'Network' | 'Http' | 'Parse', ... } }`
+UI は `error.type` で分岐できる。
