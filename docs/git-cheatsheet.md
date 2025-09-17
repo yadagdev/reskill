@@ -21,6 +21,11 @@ gh pr create --base main --head <branch> --fill
 
 # 6) レビュー後 Squash merge & ブランチ削除
 gh pr merge --squash --delete-branch
+
+# 7) mainブランチに変更内容を反映させる
+git switch main
+git branch --set-upstream-to=origin/main main
+git pull --ff-only
 ```
 
 ## よく使うオプション
