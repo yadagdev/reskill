@@ -17,6 +17,7 @@ DI前提: createHttpClientで作ったインスタンスをサービス層に注
 import type { Result } from '../domain/common/Result';
 import { joinUrl } from './internal/joinUrl';
 import { extractErrorMessage } from './internal/extractErrorMessage';
+import { isJsonResponse } from './internal/isJsonResponse';
 
 // 通信の入口を一本化するインターフェース
 export interface HttpClient {
@@ -31,12 +32,6 @@ export interface HttpClient {
 export function createHttpClient(baseUrl: string): HttpClient {
     // 0) baseUrl を正規化（末尾の"/"を削る）
     const normalizedBase = baseUrl.replace(/\/+$/, '');
-
-    // 1) JSONレスポンスかどうかを判定するためのヘルパ
-    const isJson = (response: Response) => {
-        const contentType = response.headers.get('content-type') ?? '';
-        return contentType.toLowerCase().includes('application/json');
-    };
 
     return {
         // =================
@@ -72,7 +67,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
             // 5) 成功(2xx)系と失敗(4xx/5xx)系で分岐
             if (response.ok) {
                 // 5-1) 成功側: JSONならjson()実施、それ以外はundefinedを返す
-                if (isJson(response)) {
+                if (isJsonResponse(response)) {
                     try {
                         const data = await response.json();
                         return { ok: true, value: data as T };
@@ -88,7 +83,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
             } else {
                 // 5-3) 失敗側: 可能なら本文JSONを読み、extractErrorMessageを文言を決めてHttpに丸める
                 let parsed: unknown = undefined;
-                if (isJson(response)) {
+                if (isJsonResponse(response)) {
                     try {
                         parsed = await response.json();
                     } catch {
@@ -132,7 +127,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
             }
 
             if (response.ok) {
-                if (isJson(response)) {
+                if (isJsonResponse(response)) {
                     try {
                         const data = await response.json();
                         return { ok: true, value: data as T };
@@ -145,7 +140,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
                 }
             } else {
                 let parsed: unknown = undefined;
-                if (isJson(response)) {
+                if (isJsonResponse(response)) {
                     try {
                         parsed = await response.json();
                     } catch {
