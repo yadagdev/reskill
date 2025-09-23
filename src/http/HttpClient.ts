@@ -23,7 +23,8 @@ import { isJsonResponse } from './internal/isJsonResponse';
 export interface HttpClient {
     get<T>(url: string, init?: RequestInit): Promise<Result<T>>;
     post<T, B>(url: string, body: B, init?: RequestInit): Promise<Result<T>>;
-    // TODO: put/deleteを追加
+    delete<T>(url: string, init?: RequestInit): Promise<Result<T>>;
+    // TODO: putを追加
 }
 
 // 具象実装ファクトリ（本体は未実装）
@@ -151,5 +152,31 @@ export function createHttpClient(baseUrl: string): HttpClient {
                 return { ok: false, error: { type: 'Http', status: response.status, message } };
             }
         },
+
+        // =================
+        // DELETE
+        // =================
+        async delete<T>(url: string, init?: RequestInit): Promise<Result<T>> {
+            const fullUrl = joinUrl(normalizedBase, url);
+            const headers: HeadersInit = {
+                Accept: 'application/json',
+                ...(init?.headers ?? {}),
+            };
+
+            try {
+                // response
+                const res = await fetch(fullUrl, {
+                    method: 'DELETE',
+                    ...init,
+                    headers
+                });
+                // 成功のHTTP/Parseは追加実装予定
+                return { ok: true, value: undefined as T };
+            } catch (e: unknown) {
+                const message = (e as Error)?.message ?? String(e);
+                return { ok: false, error: { type: 'Network', message }}
+            }
+        },
+
     };
 }
