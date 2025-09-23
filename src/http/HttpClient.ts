@@ -30,7 +30,7 @@ export interface HttpClient {
 // 例) baseUrl: "https://api.example.com", url:"users" -> "https://api.example.com/users"
 export function createHttpClient(baseUrl: string): HttpClient {
     // 0) baseUrl を正規化（末尾の"/"を削る）
-    const normarizedBase = baseUrl.replace(/\/+$/, '');
+    const normalizedBase = baseUrl.replace(/\/+$/, '');
 
     // 1) JSONレスポンスかどうかを判定するためのヘルパ
     const isJson = (response: Response) => {
@@ -43,7 +43,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
         // GET
         // =================
         async get<T>(url: string, init?: RequestInit): Promise<Result<T>> {
-            const fullUrl = joinUrl(normarizedBase, url);
+            const fullUrl = joinUrl(normalizedBase, url);
 
             // 2) 呼び出し側のheadersを尊重しつつ Accept を付与
             const headers: HeadersInit = {
@@ -86,7 +86,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
                     return { ok: true, value: undefined as T };
                 }
             } else {
-                // 5-3) 失敗側: 可能なら本文JSONを読み、extractErrorMessageを文言をk馬手Httpに丸める
+                // 5-3) 失敗側: 可能なら本文JSONを読み、extractErrorMessageを文言を決めてHttpに丸める
                 let parsed: unknown = undefined;
                 if (isJson(response)) {
                     try {
@@ -104,7 +104,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
         // POST
         // =========================
         async post<T, B>(url:string, body: B, init?: RequestInit): Promise<Result<T>> {
-            const fullUrl = joinUrl(normarizedBase, url);
+            const fullUrl = joinUrl(normalizedBase, url);
 
             // 6) POSTはContent-Type: application/json を付与し body をJSON文字列か
             const headers: HeadersInit = {
