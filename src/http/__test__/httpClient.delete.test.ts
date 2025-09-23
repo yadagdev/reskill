@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createHttpClient, HttpClient } from '../HttpClient';
+import { create } from "domain";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -24,5 +25,33 @@ describe('HttpClient.delete', () => {
             expect(result.error.message).toMatch(/offline/);
         }
     });
+
+    it('204: contentがなしは ok=true & value===undefined', async () => {
+        vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+            new Response(null, { status: 204 })
+        );
+
+        const http: HttpClient = createHttpClient(BASE);
+        const result = await http.delete<unknown>('/no-content');
+
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value).toBeUndefined();
+        }
+    });
+
+    it('Content-Length:0: contentがなしは ok=true & value===undefined', async () => {
+        vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+            new Response('', { status: 200, headers: { 'content-length': '0'} })
+        );
+
+        const http: HttpClient = createHttpClient(BASE);
+        const result = await http.delete<unknown>('/zero');
+
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value).toBeUndefined();
+        }
+    })
 
 })

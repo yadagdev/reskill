@@ -163,18 +163,32 @@ export function createHttpClient(baseUrl: string): HttpClient {
                 ...(init?.headers ?? {}),
             };
 
+            let response: Response;
+
             try {
                 // response
-                const res = await fetch(fullUrl, {
+                response = await fetch(fullUrl, {
                     method: 'DELETE',
                     ...init,
                     headers
                 });
-                // 成功のHTTP/Parseは追加実装予定
-                return { ok: true, value: undefined as T };
             } catch (e: unknown) {
                 const message = (e as Error)?.message ?? String(e);
                 return { ok: false, error: { type: 'Network', message }}
+            }
+
+            // contentなしで成功の早期 return (※204 or CL:0)
+            if (response.status === 204 || response.headers.get('content-length') === '0') {
+                return {
+                    ok: true,
+                    value: undefined as T
+                };
+            }
+
+            // HTTP/Parse/JSONを実装予定
+            return {
+                ok: true,
+                value: undefined as T
             }
         },
 
