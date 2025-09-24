@@ -185,11 +185,40 @@ export function createHttpClient(baseUrl: string): HttpClient {
                 };
             }
 
-            // HTTP/Parse/JSONを実装予定
-            return {
-                ok: true,
-                value: undefined as T
+            // HTTP: 404 でfalseを返す
+            if (!response.ok) {
+                let parsed :unknown = undefined;
+                if (isJsonResponse(response)) {
+                    try {
+                        parsed = await response.json();
+                    } catch {
+                        // 404 で本文が壊れていてもHttpに丸める方針（Parseにはしない）
+                    }
+                }
+                const message = extractErrorMessage(response, parsed);
+                return { ok: false, error: {
+                    type: 'Http',
+                    status: response.status,
+                    message
+                }}
             }
+
+            // 成功系
+            if (isJsonResponse(response)) {
+                try {
+                    const data = await response.json();
+                    return { ok: true, value: data as T };
+                } catch (err: unknown) {
+                    const message = (err as Error)?.message ?? String(err);
+                    return { ok: false, error: {
+                        type: 'Parse',
+                        message
+                    }};
+                }
+            }
+
+            // JSON以外はpayloadを返さず成功扱い
+            return { ok: true, value: undefined as T };
         },
 
     };
