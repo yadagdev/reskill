@@ -79,4 +79,22 @@ describe('HttpClient.delete', () => {
         }
     });
 
+    it('200 + application/json の本文なら ok=true で value にJSONを入れる', async () => {
+        vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+            new Response(
+                JSON.stringify({ ok: true}), {
+                status: 200,
+                headers: { 'content-type': 'application/json' }
+            })
+        );
+
+        const http: HttpClient = createHttpClient(BASE);
+        const result = await http.delete<{ ok: boolean}>('/users/123');
+
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value).toEqual({ ok: true })
+        }
+    })
+
 })
