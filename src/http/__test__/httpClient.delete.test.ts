@@ -97,4 +97,24 @@ describe('HttpClient.delete', () => {
         }
     })
 
+    it('200 + text/plain の本文なら ok=true & value===undefined (本文は読まない)', async () => {
+        vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+            new Response(
+                'delete',
+                {
+                    status: 200,
+                    headers: { 'content-type': 'text/plain'}
+                }
+            )
+        );
+
+        const http: HttpClient = createHttpClient(BASE);
+        const result = await http.delete<unknown>('/users/123');
+
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value).toBeUndefined();
+        }
+    })
+
 })
