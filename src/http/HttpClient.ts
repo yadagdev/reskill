@@ -18,6 +18,7 @@ import type { Result } from '../domain/common/Result';
 import { joinUrl } from './internal/joinUrl';
 import { extractErrorMessage } from './internal/extractErrorMessage';
 import { isJsonResponse } from './internal/isJsonResponse';
+import { hasNoContent } from './internal/hasNoContent';
 
 // 通信の入口を一本化するインターフェース
 export interface HttpClient {
@@ -61,7 +62,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
             }
 
             // 4) 204 or Content-Length:0はJSONを読まずに成功扱い
-            if (response.status === 204 || response.headers.get('content-length') === '0') {
+            if (hasNoContent(response)) {
                 return { ok: true, value: undefined as T};
             };
 
@@ -123,7 +124,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
             }
 
             // 7) 204 or Content-Length:0 はJSONを読まずに成功扱い（value: undefined)
-            if (response.status === 204 || response.headers.get('content-length') === '0') {
+            if (hasNoContent(response)) {
                 return { ok: true, value: undefined as T };
             }
 
@@ -178,7 +179,7 @@ export function createHttpClient(baseUrl: string): HttpClient {
             }
 
             // contentなしで成功の早期 return (※204 or CL:0)
-            if (response.status === 204 || response.headers.get('content-length') === '0') {
+            if (hasNoContent(response)) {
                 return {
                     ok: true,
                     value: undefined as T
