@@ -23,9 +23,10 @@ gh pr create --base main --head <branch> --fill
 gh pr merge --squash --delete-branch
 
 # 7) mainブランチに変更内容を反映させる
-git switch main
-git branch --set-upstream-to=origin/main main
-git pull --ff-only
+git fetch origin
+git pull        # fast-forward できるときだけ進める
+# もし「fast-forward不可」になったら、mainにローカルコミットがあるので↓で揃える
+git reset --hard origin/main   # main を完全にリモートと一致させる（※ローカルmainの差分は消えます）
 ```
 
 ## よく使うオプション
