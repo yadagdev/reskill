@@ -95,7 +95,7 @@ describe('HttpClient.delete', () => {
         if (result.ok) {
             expect(result.value).toEqual({ ok: true })
         }
-    })
+    });
 
     it('200 + text/plain の本文なら ok=true & value===undefined (本文は読まない)', async () => {
         vi.spyOn(globalThis, 'fetch').mockResolvedValue(
@@ -115,6 +115,29 @@ describe('HttpClient.delete', () => {
         if (result.ok) {
             expect(result.value).toBeUndefined();
         }
-    })
+    });
+
+    it('Http: 404 + 非JSON本文なら statusText を message に使う', async () => {
+        vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+            new Response(
+                'oops',
+                {
+                    status: 404,
+                    statusText: 'Not Found',
+                    headers: { 'content-type': 'text/plain'}
+                }
+            )
+        )
+
+        const http: HttpClient = createHttpClient(BASE);
+        const result = await http.delete<unknown>('/user/xxx')
+
+        expect(result.ok).toBe(false);
+        if(!result.ok && result.error.type === 'Http') {
+            expect(result.error.type).toBe('Http');
+            expect(result.error.status).toBe(404);
+            expect(result.error.message).toBe('Not Found');
+        }
+    });
 
 })
